@@ -862,3 +862,67 @@
 - dev profileでV9開発用初期管理者データが適用されたことをDB上で確認する
 - `users` と `system_roles` をJOINし、初期管理者の `role_code` が `SYSTEM_ADMIN` であることを確認する
 - V9適用確認後、固定マスタ系Entity実装準備へ進む
+
+---
+
+## 2026-07-23 終了報告
+
+### 作業内容
+
+- ユーザー指示により、V9分離設定関連の変更をコミット・プッシュする手順を整理した
+- `SystemRole.java` は作成途中のため、コミット対象から除外する方針を確認した
+- 最新コミットが `9231098 Add development profile migration setup` であることを確認した
+- 未追跡ファイルとして `backend/src/main/java/com/example/devsupport/Entity/SystemRole.java` が残っていることを確認した
+- 固定マスタEntityに含めるべき内容として、`id`、`code`、`name`、`createdAt`、`updatedAt`、およびStatus/Priorityの `sortOrder` を整理した
+
+### 現在の状況
+
+- V9分離設定はコミット・プッシュ済み
+- Git上の未追跡は、作成途中の `SystemRole.java` を含む `Entity` ディレクトリのみ
+- 次の実装対象は固定マスタ系Entity
+
+### 学習内容
+
+- 作成途中のファイルは無理にコミットせず、意味のある作業単位になってからコミットする
+- 固定マスタEntityでは、内部判定用の `code` と画面表示用の `name` を分けて扱う
+- 固定マスタは他のEntityから参照されるため、Entity実装の土台になる
+
+### 直近レビューでの残修正候補
+
+- `SystemRole.java` は作成途中のため、次回レビュー対象
+
+### 次回タスク
+
+- `SystemRole.java` の内容をレビューする
+- 必要に応じて固定マスタEntityのパッケージ名・クラス名・フィールド構成を設計書と照合する
+- `SystemRole` が整理できたら、`ProjectRole`、`TaskStatus`、`TaskPriority` の実装準備に進む
+---
+
+## 2026-07-28 終了報告
+
+### 作業内容
+
+- 固定マスタEntity 4ファイルの最終レビューを実施した。
+- 対象は `SystemRole.java`、`ProjectRole.java`、`TaskStatus.java`、`TaskPriority.java`。
+- DB定義、詳細設計、固定マスタの運用方針と照合し、重大な修正点がないことを確認した。
+- `code` と `sortOrder` のSetterを削除し、`name` のSetterのみ残す方針を妥当と判断した。
+- 固定マスタEntityの配置について、現在の `user.entity` から変更する場合は `master.entity` 配下が整理しやすいことを説明した。
+
+### 現在の状態
+
+- 固定マスタEntityの基本方針は整理済み。
+- 次の実装候補は `User Entity`。
+- `User Entity` 作成前に、`deletedBy` を `User` への自己参照として扱うか、`Long` のIDとして扱うかを決める必要がある。
+
+### 学習内容
+
+- 固定マスタEntityは業務データEntityとは役割が異なる。
+- 固定マスタは `code` を内部判定、`name` を表示名として扱う。
+- Entityの配置は「どの機能に属するか」だけでなく、「複数機能から共通参照されるか」も判断材料になる。
+- `master.entity` のような共通マスタ用パッケージに分けると、今後 `user`、`project`、`task` のEntityが増えたときに見通しがよくなる。
+
+### 次回タスク
+
+- 固定マスタEntityの配置を現状維持にするか、`master.entity` へ移動するか決める。
+- `User Entity` の構成を確認する。
+- `deletedBy` の表現方法を決める。
