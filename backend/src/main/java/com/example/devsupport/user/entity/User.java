@@ -2,9 +2,16 @@ package com.example.devsupport.user.entity;
 
 import java.time.LocalDateTime;
 
-import com.example.devsupport.master.entity.SystemRole;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Column;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
 
-import jakarta.persistence.*;
+import com.example.devsupport.master.entity.SystemRole;
 
 @Entity
 @Table(name = "users")

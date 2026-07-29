@@ -926,3 +926,42 @@
 - 固定マスタEntityの配置を現状維持にするか、`master.entity` へ移動するか決める。
 - `User Entity` の構成を確認する。
 - `deletedBy` の表現方法を決める。
+---
+
+## 2026-07-28 終了報告 2
+
+### 作業内容
+
+- 固定マスタEntityを `master.entity` 配下へ整理した。
+- `User Entity` を作成し、`SystemRole` との多対1関連、`deletedBy` の自己参照、DB管理日時の扱いを確認した。
+- 固定マスタRepositoryを作成した。
+  - `SystemRoleRepository`
+  - `ProjectRoleRepository`
+  - `TaskStatusRepository`
+  - `TaskPriorityRepository`
+- `UserRepository` を作成し、メール検索、重複確認、未削除ID取得、管理者数取得の方針を整理した。
+- `Project Entity` と `ProjectMember Entity` を作成した。
+- `ProjectMember` では `project_id + user_id` の複合一意制約をEntity側にも明示した。
+- `ProjectRepository` と `ProjectMemberRepository` を作成した。
+- `mvn -f backend/pom.xml compile` の成功を確認した。
+- ユーザーによりGitコミット・プッシュが完了した。
+
+### 現在の状態
+
+- 作業ツリーはクリーン。
+- User系、固定マスタ系、Project系のEntity/Repository実装が一段落した。
+- 次の実装候補はTask系Entity。
+
+### 学習内容
+
+- Repositoryメソッド名ではDBカラム名ではなくEntityフィールド名を使う。
+- `@JoinColumn` や `@UniqueConstraint` ではDBカラム名を使う。
+- 外部キーをEntity関連として扱う場合、`xxxId` ではなく `xxx` というフィールド名が自然。
+- 複合一意制約は、個別カラムの `unique = true` ではなく、`@Table` 側で表現する。
+- 作成日時・更新日時をDB管理にする場合、Entity側ではINSERT/UPDATE対象外として扱う。
+
+### 次回タスク
+
+- 作業開始時にGit状態と最新コミットを確認する。
+- `Task Entity` の実装準備として、`V4__create_task_tables.sql` と `Entity設計書.md` のTask項目を確認する。
+- `TaskStatus`、`TaskPriority`、`Project`、`User` との関連を整理してから `Task.java` を作成する。
