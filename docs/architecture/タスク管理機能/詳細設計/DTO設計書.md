@@ -666,7 +666,63 @@ Status別タスク一覧DTO。
 | Content-Disposition | ダウンロード用ファイル名 |
 | Content-Length | ファイルサイズ |
 
-## 17. DTOとEntityの対応
+## 17. 固定マスタDTO
+
+固定マスタ取得APIで使用するResponse DTO。
+
+固定マスタは初期MVPでは画面やAPIから変更しないため、Request DTOは定義しない。
+
+固定マスタDTOには、画面表示や選択値として必要な項目のみ含める。
+
+DB内部管理項目である `createdAt`、`updatedAt` は含めない。
+
+## 17.1 MasterDataResponse
+
+固定マスタ一式をまとめて返却するDTO。
+
+画面初期表示時に必要な固定マスタを1回のAPI呼び出しで取得できるようにする。
+
+| 項目 | 型 | 概要 |
+|---|---|---|
+| projectRoles | array<ProjectRoleResponse> | プロジェクト内ロール一覧 |
+| taskStatuses | array<TaskStatusResponse> | タスクStatus一覧 |
+| taskPriorities | array<TaskPriorityResponse> | タスクPriority一覧 |
+
+## 17.2 ProjectRoleResponse
+
+プロジェクト内ロール固定マスタ1件分のResponse DTO。
+
+| 項目 | 型 | 概要 |
+|---|---|---|
+| id | number | プロジェクト内ロールID |
+| code | string | 実装上の判定に使用するコード |
+| name | string | 画面表示名 |
+
+`ProjectRole` には表示順制御用の `sortOrder` がないため、DTOにも含めない。
+
+## 17.3 TaskStatusResponse
+
+タスクStatus固定マスタ1件分のResponse DTO。
+
+| 項目 | 型 | 概要 |
+|---|---|---|
+| id | number | タスクStatus ID |
+| code | string | 実装上の判定に使用するコード |
+| name | string | 画面表示名 |
+| sortOrder | number | 表示順 |
+
+## 17.4 TaskPriorityResponse
+
+タスクPriority固定マスタ1件分のResponse DTO。
+
+| 項目 | 型 | 概要 |
+|---|---|---|
+| id | number | タスクPriority ID |
+| code | string | 実装上の判定に使用するコード |
+| name | string | 画面表示名 |
+| sortOrder | number | 表示順 |
+
+## 18. DTOとEntityの対応
 
 | DTO | 主な対応Entity |
 |---|---|
@@ -686,8 +742,12 @@ Status別タスク一覧DTO。
 | TaskBoardResponse | Task, TaskStatus, TaskPriority, User |
 | TaskSaveResponse | Task, TaskStatus, TaskPriority, User |
 | ProjectMemberRoleUpdateResponse | ProjectMember, User, ProjectRole |
+| MasterDataResponse | ProjectRole, TaskStatus, TaskPriority |
+| ProjectRoleResponse | ProjectRole |
+| TaskStatusResponse | TaskStatus |
+| TaskPriorityResponse | TaskPriority |
 
-## 18. DTO変換方針
+## 19. DTO変換方針
 
 EntityからResponse DTOへの変換は、Service層または変換専用の処理で行う。
 
@@ -697,7 +757,7 @@ Controllerでは、Entityを直接返却しない。
 
 論理削除済みデータは、通常のResponse DTOには含めない。
 
-## 19. 入力チェック方針
+## 20. 入力チェック方針
 
 入力チェックはRequest DTOを起点として行う。
 
@@ -720,7 +780,7 @@ Controllerでは、Entityを直接返却しない。
 | 招待URL有効期限 | Service |
 | パスワードリセットURL有効期限 | Service |
 
-## 20. 決定事項
+## 21. 決定事項
 
 - API入出力にはDTOを使用する
 - EntityはAPIレスポンスとして直接返却しない
@@ -729,8 +789,10 @@ Controllerでは、Entityを直接返却しない。
 - Response DTOには画面表示に必要な項目のみ含める
 - 添付ファイル取得APIはJSON DTOではなくファイルデータを返却する
 - 削除済みユーザーのdisplayNameは `削除済ユーザー` として返却する
+- 固定マスタ取得APIでは `MasterDataResponse` を使用し、ProjectRole、TaskStatus、TaskPriorityをまとめて返却する
+- 固定マスタのResponse DTOには `createdAt`、`updatedAt` を含めない
 
-## 21. 未決事項
+## 22. 未決事項
 
 以下は後続工程で具体化する。
 

@@ -15,9 +15,9 @@
 - `テストケース設計書.md` と `実装計画書.md` は作成済み
 - 詳細設計一式の横断レビューは完了
 - クライアントモードで、実装開始に必要な未決事項のみ最終整理する方針を確認済み
-- 設計書は `/docs/architecture/` 配下にユーザーが作成する
-- AIは `/docs/architecture/` 配下のファイルを直接編集しない
-- AIはレビュー、助言、雛形案の提示のみ行う
+- 設計書は `/docs/architecture/` 配下にユーザー主体で作成する
+- AIは通常時、レビュー、助言、雛形案の提示を中心に支援する
+- ユーザーから明示的な編集指示がある場合、AIは `/docs/architecture/` 配下の設計書Markdownを直接編集・新規作成できる
 
 ## 想定アーキテクチャ
 
@@ -87,8 +87,9 @@
 ## 決定事項
 
 - AIは実装代行ではなくメンターとして使用する
-- 設計書は `/docs/architecture/` にユーザーが作成する
-- AIは `/docs/context/` と `/docs/logs/` のMarkdownのみ直接編集できる
+- 設計書は `/docs/architecture/` にユーザー主体で作成する
+- AIは通常時、`/docs/context/` と `/docs/logs/` のMarkdownを直接編集できる
+- ユーザーから明示的な編集指示がある場合、AIは `/docs/architecture/` 配下の設計書Markdownも直接編集・新規作成できる
 - 初期MVPは複数プロジェクト対応のカンバン型タスク管理
 - 使用技術候補は Next.js、Spring Boot、MySQL
 - 認証はメールログインとパスワードリセット

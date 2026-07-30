@@ -2,7 +2,7 @@
 
 ## 現在の工程
 
-- 実装フェーズ準備
+- バックエンド実装フェーズ
 
 ## 現在のタスク
 
@@ -67,6 +67,12 @@
 - Flywayマイグレーション設計書のファイル命名方針は、V5以降の実装順に合わせて更新済み
 - `V9__insert_dev_initial_admin.sql` は開発用マイグレーションとして扱う方針
 - Gitのコミット・プッシュはユーザー指示時に行う方針
+- 固定マスタ系Entity/Repositoryは作成・レビュー・コンパイル確認済み
+- User系Entity/Repositoryは作成・レビュー・コンパイル確認済み
+- Project系Entity/Repositoryは作成・レビュー・コンパイル確認済み
+- Task系Entity/Repositoryは作成・レビュー・コンパイル確認済み
+- ProjectInvitation、PasswordResetToken、関連Enum、Repositoryは作成・レビュー・コンパイル確認済み
+- Entity/Repository実装と設計書の照合は完了済み
 
 ## 直近レビューでの残修正候補
 
@@ -76,13 +82,17 @@
 
 - ユーザーが解説を希望した用語、または学習上重要な用語は `docs/context/glossary/glossary.md` または `docs/context/glossary/` 配下の学習用Markdownに追記する
 - 用語集追記時は、意味と本プロジェクトでの扱い方を簡潔に記録する
+- `/docs/architecture/` 配下の設計書Markdownは、ユーザーから明示指示がある場合に限り、AIが編集・新規作成できる
 - Gitのコミット・プッシュは、ユーザーから明示指示があった場合のみタスクとして扱う
 - 通常の次回タスクや作業手順には、Git関連作業を含めない
 - 作業終了前にユーザーがコミット・プッシュを指示した場合、その時点で差分確認、ステージング、コミット、プッシュの手順を提示する
 
 ## 次回タスク
 
-- dev profileでV9開発用初期管理者データが適用されたことをDB上で確認する
-- `users` と `system_roles` をJOINし、初期管理者の `role_code` が `SYSTEM_ADMIN` であることを確認する
-- `display_name` の日本語表示がPowerShellで文字化けする場合は、`HEX(display_name)` でDB保存値を確認する
-- V9適用確認後、次の実装タスクとして固定マスタ系Entity実装準備に進む
+- 固定マスタDTOを作成する
+  - `MasterDataResponse`
+  - `ProjectRoleResponse`
+  - `TaskStatusResponse`
+  - `TaskPriorityResponse`
+- 固定マスタDTO作成後、`mvn -f backend/pom.xml compile` で確認する
+- DTOレビュー完了後、`MasterDataService` 作成に進む
