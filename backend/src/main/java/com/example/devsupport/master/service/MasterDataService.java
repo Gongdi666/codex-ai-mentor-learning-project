@@ -17,7 +17,62 @@ import com.example.devsupport.master.repository.TaskPriorityRepository;
 import com.example.devsupport.master.repository.TaskStatusRepository;
 
 @Service
-@Transactional(readOnly = true)
+@Transactional(readOnly = true) // このServiceの処理が読み取り専用になるアノテーション
 public class MasterDataService {
+    private final ProjectRoleRepository projectRoleRepository;
+    private final TaskStatusRepository taskStatusRepository;
+    private final TaskPriorityRepository taskPriorityRepository;
 
+    public MasterDataService(
+            ProjectRoleRepository projectRoleRepository,
+            TaskStatusRepository taskStatusRepository,
+            TaskPriorityRepository taskPriorityRepository) {
+        this.projectRoleRepository = projectRoleRepository;
+        this.taskStatusRepository = taskStatusRepository;
+        this.taskPriorityRepository = taskPriorityRepository;
+    }
+
+    // 固定マスタ一式を取得するServiceメソッド
+    public MasterDataResponse getMasterData() {
+        // idで昇順に並び替えた後EntityをDTOに変換
+        List<ProjectRoleResponse> projectRoles = projectRoleRepository.findAllByOrderByIdAsc().stream()
+                .map(this::toProjectRoleResponse)
+                .toList();
+
+        // sortOrderで昇順に並び替えた後EntityをDTOに変換
+        List<TaskStatusResponse> taskStatuses = taskStatusRepository.findAllByOrderBySortOrderAsc().stream()
+                .map(this::toTaskStatusResponse)
+                .toList();
+
+        List<TaskPriorityResponse> taskPriorities = taskPriorityRepository.findAllByOrderBySortOrderAsc().stream()
+                .map(this::toTaskPriorityResponse)
+                .toList();
+
+        // 固定マスタDTOをMasterDataResponseにまとめる
+        return new MasterDataResponse(projectRoles, taskStatuses, taskPriorities);
+    }
+
+    // projectRole EntityをDTOに変換
+    private ProjectRoleResponse toProjectRoleResponse(ProjectRole projectRole) {
+        return new ProjectRoleResponse(
+                projectRole.getId(),
+                projectRole.getCode(),
+                projectRole.getName());
+    }
+
+    private TaskStatusResponse toTaskStatusResponse(TaskStatus taskStatus) {
+        return new TaskStatusResponse(
+                taskStatus.getId(),
+                taskStatus.getCode(),
+                taskStatus.getName(),
+                taskStatus.getSortOrder());
+    }
+
+    private TaskPriorityResponse toTaskPriorityResponse(TaskPriority taskPriority) {
+        return new TaskPriorityResponse(
+                taskPriority.getId(),
+                taskPriority.getCode(),
+                taskPriority.getName(),
+                taskPriority.getSortOrder());
+    }
 }

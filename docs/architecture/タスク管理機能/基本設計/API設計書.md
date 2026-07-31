@@ -126,6 +126,7 @@ APIでは、以下を確認する。
 | 認証 | GET | /api/auth/me | ログインユーザー取得 | 必要 |
 | パスワードリセット | POST | /api/password-reset/request | リセット申請 | 不要 |
 | パスワードリセット | POST | /api/password-reset/confirm | パスワード再設定 | 不要 |
+| 固定マスタ | GET | /api/master-data | 固定マスタ一式取得 | 必要 |
 | プロジェクト | GET | /api/projects | プロジェクト一覧取得 | 必要 |
 | プロジェクト | POST | /api/projects | プロジェクト作成 | 必要 |
 | プロジェクト | GET | /api/projects/{projectId} | プロジェクト詳細取得 | 必要 |
@@ -150,6 +151,29 @@ APIでは、以下を確認する。
 | 添付 | POST | /api/projects/{projectId}/tasks/{taskId}/attachments | 添付ファイル追加 | 必要 |
 | 添付 | GET | /api/projects/{projectId}/tasks/{taskId}/attachments/{attachmentId} | 添付ファイル取得 | 必要 |
 | 添付 | DELETE | /api/projects/{projectId}/tasks/{taskId}/attachments/{attachmentId} | 添付ファイル削除 | 必要 |
+
+## 6.1 固定マスタAPI
+
+固定マスタAPIは、画面表示や入力選択肢に必要な固定マスタを取得するために使用する。
+
+初期MVPでは、固定マスタは画面やAPIから変更しないため、取得APIのみ定義する。
+
+| 項目 | 内容 |
+|---|---|
+| メソッド | GET |
+| パス | /api/master-data |
+| 認証 | 必要 |
+| 概要 | 固定マスタ一式取得 |
+| Request | なし |
+| Response | MasterDataResponse |
+
+### 返却対象
+
+| 項目 | 概要 |
+|---|---|
+| projectRoles | プロジェクト内ロール一覧 |
+| taskStatuses | タスクStatus一覧 |
+| taskPriorities | タスクPriority一覧 |
 
 ## 7. 認証API
 

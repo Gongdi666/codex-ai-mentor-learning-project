@@ -59,6 +59,7 @@ ControllerはRequest DTOを受け取り、Serviceを呼び出し、Response DTO�
 | TaskController | タスク一覧、作成、詳細、更新、Status変更、削除 |
 | TaskCommentController | コメント作成、更新、削除 |
 | AttachmentController | 添付ファイル追加、取得、削除 |
+| MasterDataController | 固定マスタ取得 |
 
 ## 5. 共通Controller方針
 
@@ -333,7 +334,29 @@ AttachmentControllerは、添付ファイル追加、取得、削除APIを担当
 
 ファイル本体はDBから取得する。
 
-## 16. 入力チェック方針
+## 16. MasterDataController
+
+## 16.1 責務
+
+MasterDataControllerは、画面表示や入力選択肢に必要な固定マスタ取得APIを担当する。
+
+Controllerでは固定マスタの取得条件やDTO変換を行わず、MasterDataServiceを呼び出してResponse DTOを返却する。
+
+## 16.2 API一覧
+
+| 処理 | メソッド | パス | 認証 | CSRF | Request DTO | Response DTO | Service |
+|---|---|---|---|---|---|---|---|
+| 固定マスタ一式取得 | GET | /api/master-data | 必要 | 不要 | なし | MasterDataResponse | MasterDataService |
+
+## 16.3 補足
+
+固定マスタ取得APIでは、ProjectRole、TaskStatus、TaskPriorityをまとめて返却する。
+
+固定マスタは初期MVPでは画面やAPIから変更しないため、作成・更新・削除APIは定義しない。
+
+GET APIのためCSRFトークンは不要とする。
+
+## 17. 入力チェック方針
 
 ControllerではRequest DTOを受け取り、入力チェックの起点とする。
 
@@ -356,7 +379,7 @@ ControllerではRequest DTOを受け取り、入力チェックの起点とす�
 | 招待URL有効期限 | Service |
 | パスワードリセットURL有効期限 | Service |
 
-## 17. エラーレスポンス方針
+## 18. エラーレスポンス方針
 
 Controllerで発生した例外は、共通例外ハンドリングでエラーレスポンスへ変換する。
 
@@ -375,7 +398,7 @@ Controllerごとに独自のエラーレスポンス形式を作らない。
 
 詳細は例外設計書で定義する。
 
-## 18. ControllerとServiceの責務分担
+## 19. ControllerとServiceの責務分担
 
 | 処理 | Controller | Service |
 |---|---|---|
@@ -389,7 +412,7 @@ Controllerごとに独自のエラーレスポンス形式を作らない。
 | Repository呼び出し | 行わない | 行う |
 | Response DTO返却 | 行う | 作成する |
 
-## 19. 決定事項
+## 20. 決定事項
 
 - ControllerはAPIの入口を担当する
 - Controllerは業務ルールを持たない
@@ -402,8 +425,9 @@ Controllerごとに独自のエラーレスポンス形式を作らない。
 - 添付ファイル取得APIのみファイルデータを返却する
 - Controllerクラス名は本書のController一覧に記載した名称を基本とする
 - Controllerでは、Spring Securityで認証済みのユーザー情報を取得し、ServiceへログインユーザーIDまたはログインユーザー情報を渡す。具体的な取得方法はSpring Securityの標準的な仕組みを利用する。
+- 固定マスタ取得APIは `GET /api/master-data` とし、`MasterDataResponse` を返却する
 
-## 20. 未決事項
+## 21. 未決事項
 
 以下は後続工程で具体化する。
 

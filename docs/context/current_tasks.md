@@ -73,6 +73,10 @@
 - Task系Entity/Repositoryは作成・レビュー・コンパイル確認済み
 - ProjectInvitation、PasswordResetToken、関連Enum、Repositoryは作成・レビュー・コンパイル確認済み
 - Entity/Repository実装と設計書の照合は完了済み
+- 固定マスタDTOは作成・レビュー・コンパイル確認済み
+- `MasterDataService.java` はファイル作成済みだが、Service処理本体は未実装
+- 固定マスタ取得APIとして、API設計書に `GET /api/master-data` を追記済み
+- Controller設計書に `MasterDataController` を追記済み
 
 ## 直近レビューでの残修正候補
 
@@ -89,10 +93,14 @@
 
 ## 次回タスク
 
-- 固定マスタDTOを作成する
-  - `MasterDataResponse`
-  - `ProjectRoleResponse`
-  - `TaskStatusResponse`
-  - `TaskPriorityResponse`
-- 固定マスタDTO作成後、`mvn -f backend/pom.xml compile` で確認する
-- DTOレビュー完了後、`MasterDataService` 作成に進む
+- `MasterDataService` の処理本体を実装する
+  - Repositoryをコンストラクタインジェクションで受け取る
+  - ProjectRole、TaskStatus、TaskPriorityを取得する
+  - Entityを固定マスタDTOへ変換する
+  - `MasterDataResponse` にまとめて返す
+- 必要に応じて `ProjectRoleRepository` にid昇順一覧取得メソッドを追加する
+- `MasterDataService` 実装後、`mvn -f backend/pom.xml compile` で確認する
+- `MasterDataController` を作成する
+  - `GET /api/master-data` を定義する
+  - `MasterDataService` を呼び出す
+  - `MasterDataResponse` を返却する
