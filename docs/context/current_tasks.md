@@ -74,9 +74,11 @@
 - ProjectInvitation、PasswordResetToken、関連Enum、Repositoryは作成・レビュー・コンパイル確認済み
 - Entity/Repository実装と設計書の照合は完了済み
 - 固定マスタDTOは作成・レビュー・コンパイル確認済み
-- `MasterDataService.java` はファイル作成済みだが、Service処理本体は未実装
+- `MasterDataService.java` は作成・レビュー・コンパイル確認済み
 - 固定マスタ取得APIとして、API設計書に `GET /api/master-data` を追記済み
 - Controller設計書に `MasterDataController` を追記済み
+- `MasterDataController.java` は作成・レビュー・コンパイル確認済み
+- 固定マスタ取得API追加分はコミット済み
 
 ## 直近レビューでの残修正候補
 
@@ -93,14 +95,9 @@
 
 ## 次回タスク
 
-- `MasterDataService` の処理本体を実装する
-  - Repositoryをコンストラクタインジェクションで受け取る
-  - ProjectRole、TaskStatus、TaskPriorityを取得する
-  - Entityを固定マスタDTOへ変換する
-  - `MasterDataResponse` にまとめて返す
-- 必要に応じて `ProjectRoleRepository` にid昇順一覧取得メソッドを追加する
-- `MasterDataService` 実装後、`mvn -f backend/pom.xml compile` で確認する
-- `MasterDataController` を作成する
-  - `GET /api/master-data` を定義する
-  - `MasterDataService` を呼び出す
-  - `MasterDataResponse` を返却する
+- 固定マスタ取得APIの動作確認を行う
+  - Docker MySQLの起動状態を確認する
+  - Spring Bootを起動する
+  - `GET /api/master-data` を実行する
+  - `projectRoles`、`taskStatuses`、`taskPriorities` が返ることを確認する
+  - 認証エラーが出た場合は、Security設定・ログイン状態の問題として切り分ける
