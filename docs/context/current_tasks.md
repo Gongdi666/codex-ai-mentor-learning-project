@@ -101,3 +101,29 @@
   - `GET /api/master-data` を実行する
   - `projectRoles`、`taskStatuses`、`taskPriorities` が返ることを確認する
   - 認証エラーが出た場合は、Security設定・ログイン状態の問題として切り分ける
+
+---
+
+## 2026-08-21 現在の進捗
+
+- `MasterDataController` / `MasterDataService` / 固定マスタDTOの作成とコンパイル確認は完了。
+- `GET /api/master-data` のブラウザ確認は完了。
+- APIレスポンスで `projectRoles` / `taskStatuses` / `taskPriorities` が返却されることを確認済み。
+- MySQL上の日本語データは `HEX(name)` によりUTF-8として正常保存されていることを確認済み。
+- ブラウザでは日本語が正常表示されたため、アプリケーション側の文字化け問題は解決済みとして扱う。
+- PowerShellで発生した文字化けは、表示環境・文字コード変換の問題として扱う。
+- `SecurityConfig` は `GET /api/master-data` の開発確認用一時設定として残す。
+- Gitのコミット・プッシュはユーザー指示時のみ扱う。通常の次タスクには含めない。
+
+## 次の開発タスク
+
+- 一時的な `SecurityConfig` の扱いを開発方針として整理する。
+- `MasterDataController` の実装内容と現在の設計書記述に大きなずれがないか確認する。
+- 次の実装対象として、ユーザー系機能のService/DTO/Controllerの設計方針を確認する。
+- まずは `UserService` で扱う処理範囲を決める。
+  - ユーザー取得
+  - ユーザー登録
+  - ユーザー更新
+  - 論理削除
+  - 管理者ユーザー確認
+- `UserService` に入る前に、User用DTOの要否とレスポンス項目を設計書と照合する。

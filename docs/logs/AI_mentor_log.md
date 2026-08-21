@@ -965,3 +965,33 @@
 - 作業開始時にGit状態と最新コミットを確認する。
 - `Task Entity` の実装準備として、`V4__create_task_tables.sql` と `Entity設計書.md` のTask項目を確認する。
 - `TaskStatus`、`TaskPriority`、`Project`、`User` との関連を整理してから `Task.java` を作成する。
+
+---
+
+## 2026-08-21 MasterDataController 動作確認
+
+### 作業内容
+
+- `GET /api/master-data` の動作確認を実施した。
+- Spring Securityにより最初は401エラーが発生したため、開発確認用の一時設定として `SecurityConfig` を追加した。
+- ブラウザから `http://localhost:8080/api/master-data` にアクセスし、固定マスタ情報がJSONで返却されることを確認した。
+- MySQL上で `project_roles.name` と `HEX(name)` を確認し、日本語データの保存状態を切り分けた。
+
+### 確認結果
+
+- `projectRoles` / `taskStatuses` / `taskPriorities` がAPIレスポンスに含まれることを確認した。
+- ブラウザでは `プロジェクト管理者` / `メンバー` / `閲覧者` が正常に表示された。
+- MySQLの `HEX(name)` はUTF-8のバイト列として確認できたため、DB保存状態は正常と判断した。
+- PowerShell上で発生した文字化けは、アプリケーションやDBではなく表示環境側の問題として扱う。
+
+### 判断
+
+- `MasterDataController` / `MasterDataService` / 固定マスタDTO / 固定マスタRepository の基本動作は確認済み。
+- `SecurityConfig` は本格的な認証・認可実装までの開発確認用一時設定として残す。
+- 文字化け問題は解決済みとして扱い、次の開発タスクへ進む。
+
+### 次のタスク
+
+- `SecurityConfig` の一時設定であることを意識しつつ、次の実装対象へ進む。
+- 次の候補はUser系Service/DTO/Controllerの設計・実装。
+- まずは `UserService` で扱う処理範囲とUser用DTOの要否を確認する。

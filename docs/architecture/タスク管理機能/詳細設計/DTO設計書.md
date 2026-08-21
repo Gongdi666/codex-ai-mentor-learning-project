@@ -804,3 +804,132 @@ Controllerでは、Entityを直接返却しない。
 - パスワードルール
 - DTO変換処理をService内に置くか、専用Mapperに分けるか
 - ページングDTOを初期MVPでどの一覧APIに適用するか
+
+---
+
+## 23. User DTO 追補
+
+本章では、User系Service/Controller実装で使用するDTOを定義する。
+
+既存の認証DTOとして `LoginUserResponse` と `CurrentUserResponse` は定義済みだが、これらはログイン状態の確認や認証処理に特化したDTOである。
+一方、User系Serviceでは、ユーザー情報を取得・表示・管理するためのDTOが必要になる。
+
+Entityである `User` をAPIレスポンスとして直接返却しない。
+理由は以下の通り。
+
+- `passwordHash` を外部へ返却しないため
+- `deletedAt` / `deletedBy` などの内部管理項目を通常レスポンスから除外するため
+- `SystemRole` Entity全体ではなく、画面やAPIで必要なロール情報だけを返却するため
+- DB構造とAPIレスポンス構造を分離するため
+
+## 23.1 UserResponse
+
+ユーザー情報の基本レスポンスDTO。
+
+UserServiceの取得系処理で最初に使用するDTOとする。
+
+| 項目 | 型 | 概要 |
+|---|---|---|
+| id | number | ユーザーID |
+| email | string | メールアドレス |
+| displayName | string | 表示名 |
+| systemRoleCode | string | システムロールコード |
+| systemRoleName | string | システムロール表示名 |
+| createdAt | string | 作成日時 |
+| updatedAt | string | 更新日時 |
+
+### 含めない項目
+
+| 項目 | 理由 |
+|---|---|
+| passwordHash | 認証用の機密情報であり、APIレスポンスに含めてはいけないため |
+| deletedAt | 通常のユーザー表示では不要な内部管理項目のため |
+| deletedBy | 削除操作の監査用情報であり、通常のユーザー表示では不要なため |
+| systemRole | Entity全体を返却せず、必要な `code` と `name` のみ返却するため |
+
+## 23.2 UserSummaryResponse
+
+ユーザーを他機能の一部として表示するための簡易DTO。
+
+タスク担当者、作成者、コメント投稿者、添付ファイルアップロード者など、他のレスポンスDTO内でユーザーを簡潔に表現する場合に使用する。
+
+| 項目 | 型 | 概要 |
+|---|---|---|
+| userId | number | ユーザーID |
+| displayName | string | 表示名 |
+
+削除済みユーザーを表示する場合、`displayName` は `削除済みユーザー` として返却する。
+
+## 23.3 UserCreateRequest
+
+ユーザー登録処理で使用するRequest DTO。
+
+初期MVPでは、ユーザー登録方法が通常登録か招待経由かで扱いが分かれるため、実装対象になった時点で詳細を確定する。
+
+現時点の候補項目は以下とする。
+
+| 項目 | 型 | 必須 | 概要 |
+|---|---|---|---|
+| email | string | 必須 | メールアドレス |
+| password | string | 必須 | 平文パスワード |
+| displayName | string | 必須 | 表示名 |
+
+`password` はRequest DTOでは受け取るが、EntityやResponse DTOでは平文のまま保持・返却しない。
+Service層でハッシュ化し、`User.passwordHash` に変換する。
+
+## 23.4 UserUpdateRequest
+
+ユーザー情報更新処理で使用するRequest DTO。
+
+初期MVPでは更新対象範囲を未確定とし、実装時にAPI設計書・認証認可設計書と照合して確定する。
+
+現時点の候補項目は以下とする。
+
+| 項目 | 型 | 必須 | 概要 |
+|---|---|---|---|
+| displayName | string | 必須 | 表示名 |
+
+メールアドレス変更、パスワード変更、システムロール変更は、それぞれ認証・権限・本人確認の影響が大きいため、通常のUserUpdateRequestには含めない方針とする。
+
+## 23.5 User DTO と Entity の対応
+
+| DTO | 主な対応Entity | 用途 |
+|---|---|---|
+| UserResponse | User, SystemRole | ユーザー基本情報の返却 |
+| UserSummaryResponse | User | 他DTO内でのユーザー簡易表示 |
+| UserCreateRequest | User, SystemRole | ユーザー登録入力 |
+| UserUpdateRequest | User | ユーザー情報更新入力 |
+
+## 23.6 User DTO の変換方針
+
+User EntityからResponse DTOへの変換はService層で行う。
+
+ControllerではEntityを直接返却しない。
+
+`SystemRole` はEntity全体をDTOへ含めず、以下のように必要な値だけに変換する。
+
+| Entity側 | DTO側 |
+|---|---|
+| user.systemRole.code | systemRoleCode |
+| user.systemRole.name | systemRoleName |
+
+日時項目は、Java実装では `LocalDateTime` を使用し、JSONレスポンスではSpring/Jacksonにより文字列として返却する。
+
+## 23.7 UserService実装開始時の優先DTO
+
+UserServiceの最初の実装では、以下を優先して作成する。
+
+1. `UserResponse`
+2. `UserSummaryResponse`
+
+`UserCreateRequest` と `UserUpdateRequest` は、登録API・更新APIに着手する段階で作成する。
+
+最初のUserServiceでは、ユーザー取得とDTO変換を中心に扱う。
+
+対象処理の候補は以下とする。
+
+- ユーザーIDで取得する
+- メールアドレスで取得する
+- 未削除ユーザーのみ取得する
+- `User` Entityを `UserResponse` に変換する
+- `User` Entityを `UserSummaryResponse` に変換する

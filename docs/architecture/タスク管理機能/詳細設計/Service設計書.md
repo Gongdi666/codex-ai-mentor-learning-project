@@ -625,3 +625,126 @@ Serviceでは、業務ルール違反や対象データなしを検出する。
 - 認可補助処理を共通Serviceに分けるか
 - 例外クラスの詳細
 - 本番向けメール送信方式
+
+---
+
+## 23. UserService 追補
+
+本章では、User系DTOの追加に伴い、UserServiceの責務と初期実装範囲を定義する。
+
+UserServiceは、`User` Entityを直接Controllerへ返却せず、用途に応じたUser系Response DTOへ変換して返却する。
+
+## 23.1 責務
+
+UserServiceの主な責務は以下とする。
+
+- ユーザーIDによる未削除ユーザー取得
+- メールアドレスによる未削除ユーザー取得
+- `User` Entityから `UserResponse` への変換
+- `User` Entityから `UserSummaryResponse` への変換
+- ユーザーが削除済みかどうかを考慮した表示名変換
+- 将来的なユーザー登録・更新・論理削除処理の配置先
+
+## 23.2 初期実装範囲
+
+最初のUserService実装では、取得系とDTO変換を中心に扱う。
+
+| 処理 | 概要 | トランザクション |
+|---|---|---|
+| ユーザーIDで取得 | `id` を指定して未削除ユーザーを取得する | 読み取り専用 |
+| メールアドレスで取得 | `email` を指定して未削除ユーザーを取得する | 読み取り専用 |
+| UserResponse変換 | `User` Entityを `UserResponse` に変換する | 不要 |
+| UserSummaryResponse変換 | `User` Entityを `UserSummaryResponse` に変換する | 不要 |
+
+## 23.3 初期実装で扱わない処理
+
+以下は初期のUserService実装では扱わず、該当APIの実装時に追加する。
+
+- ユーザー登録
+- ユーザー更新
+- 論理削除
+- パスワード変更
+- システムロール変更
+- メールアドレス変更
+
+理由は、認証・認可・入力チェック・パスワードハッシュ化・本人確認などの影響範囲が大きいためである。
+
+## 23.4 使用Repository
+
+UserServiceでは以下のRepositoryを使用する。
+
+| Repository | 用途 |
+|---|---|
+| UserRepository | ユーザー取得、メールアドレス重複確認、管理者ユーザー数確認 |
+
+現時点で使用候補となるRepositoryメソッドは以下とする。
+
+| メソッド | 用途 |
+|---|---|
+| findByIdAndDeletedAtIsNull | ID指定で未削除ユーザーを取得する |
+| findByEmailAndDeletedAtIsNull | メールアドレス指定で未削除ユーザーを取得する |
+| existsByEmail | ユーザー登録時のメールアドレス重複確認 |
+| countBySystemRole_CodeAndDeletedAtIsNull | 管理者ユーザー数確認 |
+
+## 23.5 使用DTO
+
+UserServiceで使用するDTOは以下とする。
+
+| DTO | 用途 |
+|---|---|
+| UserResponse | ユーザー基本情報を返却する |
+| UserSummaryResponse | 他DTO内でユーザーを簡易表示する |
+| UserCreateRequest | ユーザー登録時に使用する。初期実装では未使用 |
+| UserUpdateRequest | ユーザー更新時に使用する。初期実装では未使用 |
+
+## 23.6 DTO変換方針
+
+`User` Entityから `UserResponse` へ変換する際は、以下の値を使用する。
+
+| Entity側 | DTO側 |
+|---|---|
+| user.id | id |
+| user.email | email |
+| user.displayName | displayName |
+| user.systemRole.code | systemRoleCode |
+| user.systemRole.name | systemRoleName |
+| user.createdAt | createdAt |
+| user.updatedAt | updatedAt |
+
+`passwordHash` はResponse DTOへ含めない。
+
+`deletedAt` と `deletedBy` は通常のUserResponseには含めない。
+
+## 23.7 UserSummaryResponse変換方針
+
+`UserSummaryResponse` は、タスク担当者、タスク作成者、コメント投稿者、添付ファイルアップロード者など、他DTO内でユーザーを簡易表示するために使用する。
+
+| Entity側 | DTO側 |
+|---|---|
+| user.id | userId |
+| user.displayName | displayName |
+
+削除済みユーザーを表示する必要がある場合、`displayName` は `削除済みユーザー` として返却する。
+
+## 23.8 トランザクション方針
+
+取得系処理は読み取り専用トランザクションとする。
+
+ユーザー登録・更新・論理削除などの更新系処理は、実装時に通常のトランザクションを使用する。
+
+## 23.9 例外方針
+
+対象ユーザーが存在しない場合、または削除済みの場合は、対象データなしとして扱う。
+
+具体的な例外クラスやエラーレスポンスへの変換は、例外設計書およびController実装時に確定する。
+
+## 23.10 実装開始時の優先順
+
+UserServiceの実装は以下の順で進める。
+
+1. `UserRepository` を注入する
+2. ID指定で未削除ユーザーを取得する処理を作成する
+3. メールアドレス指定で未削除ユーザーを取得する処理を作成する
+4. `UserResponse` への変換処理を作成する
+5. `UserSummaryResponse` への変換処理を作成する
+6. コンパイル確認を行う
