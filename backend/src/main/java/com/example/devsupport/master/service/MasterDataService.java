@@ -19,11 +19,11 @@ import com.example.devsupport.master.repository.TaskStatusRepository;
 @Service
 @Transactional(readOnly = true) // このServiceの処理が読み取り専用になるアノテーション
 public class MasterDataService {
-    private final ProjectRoleRepository projectRoleRepository;
+    private final ProjectRoleRepository projectRoleRepository; // コンストラクタで受け取る各Repositoryのフィールド
     private final TaskStatusRepository taskStatusRepository;
     private final TaskPriorityRepository taskPriorityRepository;
 
-    public MasterDataService(
+    public MasterDataService( // コンストラクタで各Repositoryを受け取る
             ProjectRoleRepository projectRoleRepository,
             TaskStatusRepository taskStatusRepository,
             TaskPriorityRepository taskPriorityRepository) {
@@ -48,11 +48,11 @@ public class MasterDataService {
                 .map(this::toTaskPriorityResponse)
                 .toList();
 
-        // 固定マスタDTOをMasterDataResponseにまとめる
+        // MasterDataResponseのコンストラクタに値を渡して返す
         return new MasterDataResponse(projectRoles, taskStatuses, taskPriorities);
     }
 
-    // projectRole EntityをDTOに変換
+    // 各EntityをDTOに変換
     private ProjectRoleResponse toProjectRoleResponse(ProjectRole projectRole) {
         return new ProjectRoleResponse(
                 projectRole.getId(),
