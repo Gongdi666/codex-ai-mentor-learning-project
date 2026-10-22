@@ -61,6 +61,8 @@ ControllerはRequest DTOを受け取り、Serviceを呼び出し、Response DTO�
 | AttachmentController | 添付ファイル追加、取得、削除 |
 | MasterDataController | 固定マスタ取得 |
 
+User関連の本人情報取得はAuthControllerが担当する。UserService専用のUserControllerは現行のAPI仕様には定義しない。独立したユーザー管理APIは、操作範囲・認可・画面を確定してから追加する。
+
 ## 5. 共通Controller方針
 
 Controllerで行うことは以下とする。
@@ -125,6 +127,49 @@ AuthControllerは、認証関連APIを担当する。
 セッションIDはCookieで管理する。
 
 ログアウト成功時はセッションを無効化する。
+
+## 7.4 User情報取得とServiceの対応
+
+API設計書7.4に従い、UserServiceの検索メソッドをそのままHTTPエンドポイントとして公開しない。
+
+| 項目 | 本人情報取得の仕様 |
+|---|---|
+| HTTPメソッド・パス | GET /api/auth/me |
+| Controller | AuthController |
+| 呼び出すService | AuthService。最新ユーザー参照が必要な場合、内部でUserService.getUserByIdを利用できる |
+| 認証 | 必須。認証済みセッションから本人を識別する |
+| CSRF | 不要（参照系GET） |
+| Request DTO・検索引数 | なし。任意ユーザーID・メールアドレスを検索条件として受け取らない |
+| 成功時 | 200 / CurrentUserResponse |
+| 不在・削除済みの本人 | 有効な認証として扱わず、認証状態を無効化して401 / UNAUTHENTICATED |
+| 未認証・期限切れセッション | 401 / UNAUTHENTICATED |
+
+Controllerは認証済み本人の情報をServiceへ渡し、本人確認や不在時の業務判断・DTO変換はAuthServiceに委ねる。RepositoryやUserServiceを直接呼び出して本人以外を検索しない。
+
+## 7.5 User系DTOと外部レスポンス
+
+AuthService内部でUserResponseを取得しても、本人情報APIはCurrentUserResponseの契約を維持する。
+
+| 外部レスポンス項目 | 内部UserResponseからの対応 |
+|---|---|
+| userId | id |
+| email | email |
+| displayName | displayName |
+| systemRole | systemRoleCode |
+
+systemRoleName、createdAt、updatedAtは本人情報APIに追加しない。パスワードハッシュ、削除者情報、セッションIDも返さない。
+
+UserSummaryResponseは、タスク担当者・投稿者などを他機能のレスポンス内で表現するためのDTOである。各Controllerは既存の業務Serviceを呼び出し、リソースへの認可を経たレスポンスを返す。UserService内のprivateな変換処理を共有する方法は後続実装で整理する。
+
+UserCreateRequest・UserUpdateRequestが存在することは、独立した登録・更新APIの公開を意味しない。招待登録は既存のProjectInvitationController / ProjectInvitationServiceとInvitationRegisterRequestを使用する。
+
+## 7.6 例外・認証処理の境界
+
+一般の対象データなしはResourceNotFoundExceptionを共通ハンドラが404 / RESOURCE_NOT_FOUNDへ変換する。一方、本人情報取得でUserが不在・削除済みの場合はAuthServiceと認証基盤で認証失敗へ変換し、一般検索の404を返さない。
+
+ログインのメール未登録・削除済み・パスワード不一致は認証失敗として扱う。パスワードリセット申請ではメールの存在有無によらず同じ受理応答とする。認証フィルター内の失敗応答はSpring Security側でも設定し、MVC共通ハンドラだけに依存しない。
+
+本節は実装予定の契約を定義する。AuthController・AuthService・セッション認証の連携は未実装であり、開発用SecurityConfigによる固定マスタAPIの公開設定とは区別する。
 
 ## 8. CsrfController
 

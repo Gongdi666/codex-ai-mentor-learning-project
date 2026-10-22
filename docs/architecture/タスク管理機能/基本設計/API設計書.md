@@ -227,6 +227,72 @@ APIでは、以下を確認する。
 | 認証 | 必要 |
 | 概要 | 現在ログインしているユーザー情報を取得する |
 
+### 7.4 UserServiceとユーザー関連APIの対応
+
+UserServiceは、未削除ユーザーの検索とUser系DTOへの変換を担当する内部Serviceである。Serviceメソッドの存在だけを理由に、同名のHTTPエンドポイントを追加しない。
+
+ユーザー関連のHTTP窓口は、現行の認証・招待・プロジェクトメンバーAPIの責務を維持する。
+
+| 用途 | 既存のAPI | API側の責務 |
+|---|---|---|
+| 現在の本人情報取得 | GET /api/auth/me | セッションから本人を識別し、CurrentUserResponseを返す |
+| ログイン | POST /api/auth/login | Spring Securityによる認証とセッション作成 |
+| 未登録ユーザーの登録・参加 | POST /api/invitations/{token}/register | 招待の検証、登録、プロジェクト参加を一連で扱う |
+| プロジェクト内ユーザーの表示 | GET /api/projects/{projectId}/members | 既存のプロジェクト閲覧権限に従いメンバー情報を返す |
+| タスク・コメント等のユーザー表示 | 各機能の既存取得API | 各リソースの認可を行い、必要なユーザー要約を含める |
+
+#### 本人情報取得とUserServiceの連携
+
+`GET /api/auth/me` の入口はAuthController、呼び出すServiceはAuthServiceとする。本人の識別には認証済みセッションの情報を使用し、クライアントから任意のユーザーIDやメールアドレスを指定させない。
+
+AuthServiceでDB上の最新ユーザー情報を参照する場合は、セッションに紐づくIDを用いたUserServiceの未削除ユーザー取得処理を利用できる。UserServiceはセッションやHTTPステータスを直接扱わない。
+
+| UserService内部処理 | 入力 | 戻り値・用途 |
+|---|---|---|
+| getUserById | サーバー側で確定したユーザーID | 未削除ユーザーのUserResponse。本人情報参照などの内部処理で利用する |
+| getUserByEmail | 呼び出し元が扱うメールアドレス | 未削除ユーザーのUserResponse。独立したメール検索APIとして公開しない |
+| ユーザー要約変換 | 関連付けられたUser | UserSummaryResponse。呼び出し元の整備は後続実装で行う |
+
+UserServiceの検索自体は認可を完結させない。呼び出す業務Serviceは、検索目的に応じて本人条件や対象リソースへの権限を確認する。
+
+#### レスポンスの互換性
+
+`GET /api/auth/me` の成功時は200とし、DTO設計書8.4のCurrentUserResponseを返す。UserResponseをそのまま返して既存のJSON項目を変更しない。
+
+| CurrentUserResponseの項目 | 内部UserResponseから変換する場合の取得元 |
+|---|---|
+| userId | id |
+| email | email |
+| displayName | displayName |
+| systemRole | systemRoleCode（SYSTEM_ADMIN / USER） |
+
+`systemRoleName`、`createdAt`、`updatedAt` は、既存の本人情報レスポンスには追加しない。パスワードハッシュ、削除者情報、セッションIDも返却しない。
+
+#### 不在時・認証時のエラー
+
+UserServiceの一般的な検索不在はResourceNotFoundExceptionで通知し、HTTP窓口で対象データなしとして扱う用途では404 / RESOURCE_NOT_FOUNDへ変換する。
+
+ただし、認証APIでは認証認可設計の契約を優先する。
+
+| 条件 | APIの扱い |
+|---|---|
+| /api/auth/meが未認証・セッション期限切れ | 401 / UNAUTHENTICATED |
+| セッションは存在するが本人のUserが不在・論理削除済み | 有効なログインユーザーとして扱わず、認証状態を無効化して401 / UNAUTHENTICATED |
+| ログインでメールが未登録・削除済み・パスワード不一致 | 認証失敗として401。メールの存在有無で応答を分けない |
+| パスワードリセット申請でメールが未登録・削除済み | 既存の受理レスポンスを維持し、存在有無を返さない |
+
+AuthService等でUserServiceを利用する場合、不在例外をそのまま認証APIの404として流さず、上記の契約に変換する。ログイン用のパスワード照合はSpring Securityの責務とし、パスワードハッシュを含まないUserResponseだけで認証を行わない。
+
+認証・認可・CSRFエラーはSpring Security側の処理も必要になる。MVCのGlobalExceptionHandlerだけで、フィルター内の例外まで処理できるとはみなさない。
+
+#### 独立したユーザー管理APIの範囲
+
+現行のAPI一覧では `/api/users/{id}`、メール検索、ユーザー一覧、通常登録・更新・削除の独立したAPIは定義していない。UserResponse、UserCreateRequest、UserUpdateRequestの作成済みという実装状況だけで公開仕様とはしない。
+
+要件定義書にはシステム管理者によるユーザー確認・管理の記載があるが、専用APIの操作範囲・認可・画面・入力条件は未具体化である。本追記では対象外と確定せず、追加が必要な時点で関連設計と合わせて確定する。
+
+本節はAPIと内部処理の契約を示す。AuthController、AuthService、認証基盤との連携は未実装であり、UserServiceおよび共通例外ハンドラの作成だけで本人情報APIの実装完了とはしない。
+
 ## 8. パスワードリセットAPI
 
 ### 8.1 パスワードリセット申請

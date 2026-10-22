@@ -1,5 +1,76 @@
 # AI Mentor Log
 
+## 2026-10-23 作業終了（10月22日からの継続作業）
+
+### 実装・レビュー
+
+- UserServiceの重複検索・不要なcast・Optional.get()の繰り返しを解消し、mapでtoUserResponseへ変換する構成を確認した。
+- ResourceNotFoundExceptionをdevsupport.exception配下に作成し、UserServiceの検索不在時に使用した。
+- 共通エラーDTOとしてErrorDetailとErrorResponseを作成。responseの綴りを修正し、timestampにOffsetDateTimeを採用した。
+- GlobalExceptionHandlerを作成。RestControllerAdvice・ExceptionHandlerで対象データなしを受け、ResponseEntityで404とErrorResponseを返すよう修正・レビューした。
+- メールアドレスによる未削除ユーザー取得を追加し、既存のDTO変換を再利用する構成を確認した。
+- UserSummaryResponse変換を追加。recordへの不正なフィールド追加、引数内のif文、引数の型・順序を修正した。最終コードではdeletedAtで判定し、削除済みの場合は「削除済みユーザー」を返す。
+- 簡易DTO変換はprivateかつ未使用。呼び出し元を実装する際に共有方法を検討する。
+
+### 学習・進め方の整理
+
+- 例外クラス、エラーDTO、共通ハンドラの責務と各行の意味を解説した。
+- LocalDateTime・OffsetDateTime・ZonedDateTimeの違い、オフセットと地域タイムゾーン、now()の実行環境依存を説明した。
+- Controller未実装でもService単体テストは可能だが、DB検索・認証・HTTP応答を含む機能全体の保証にはならないことを確認した。
+- MasterDataService実装時と異なるテスト順序を説明なく提案した不整合を認め、機能単位の実装後に単体・結合テストを追加する進め方に揃えた。
+
+### 設計書更新
+
+- API設計書7.4にUserServiceと既存APIの対応を追加。本人情報取得はGET /api/auth/meを維持し、独立したユーザー管理APIは未確定とした。
+- 一般検索の不在は404、認証上の本人不在・削除済みは401、パスワードリセット申請は存在有無を返さない契約を整理した。
+- Controller設計書にAuthController→AuthService→必要に応じてUserServiceという連携、CurrentUserResponseへの対応、エラー境界を追加した。
+- Service設計書の末尾追補を第10章UserServiceへ移動し、Service一覧・共通方針・AuthService連携に組み込んだ。後続章を再採番した。
+- 設計書差分の形式チェックは通過。認証連携は設計段階であり実装済みとはしていない。
+
+### 検証と残作業
+
+- コンパイル確認完了のユーザー報告あり。ただし後続変更を含む最終状態の再コンパイルは未確認。
+- DB接続・HTTP応答・認証・自動テストは今回未検証。コードレビュー結果と区別する。
+- 次回は最終コンパイル確認と、AuthService・認証DTO・認証基盤の設計照合から再開する。
+- 本日の終了時点では実装・設計・ログに未コミット変更が残っている。コミット・プッシュは今回実施していない。
+
+
+## 2026-10-21 作業終了・UserService途中レビューと学習記録
+
+### チャットでの学習内容（前日からの再開作業を含む）
+
+- Serviceの書き方は完成コードではなく、考え方・調べ方を中心に説明するよう依頼があった。
+- 処理の目的、入力、出力、検索条件、不在時の扱い、更新の有無を先に整理する方法を説明した。
+- Controller / Service / Repository / Entity / DTOの責務、コンストラクタ注入、Optional、DTO変換、読み取り専用トランザクションを復習した。
+- APIは外部から機能を利用するための窓口・仕様であり、ControllerはそのHTTP入口を実装するクラスであると説明した。
+- `GET /api/master-data` を例に、URL、HTTPメソッド、返却JSON、認証条件の関係を整理した。
+- `master` パッケージ全体は固定マスタ機能のバックエンド実装であり、全ファイルや全EntityがAPIで公開されるわけではないことを確認した。
+
+### 実装とレビュー
+
+- ユーザーがUserServiceにRepositoryのコンストラクタ注入、読み取り専用設定、ID指定の未削除ユーザー取得、UserResponse変換を途中まで記述した。
+- `getUserById` が同じRepository検索を7回呼び出している点を指摘した。検索で取得したUser全体を保持して再利用する方針を説明した。
+- `toUserResponse` を作成済みだが取得メソッドから使っていないため、DTO生成を変換メソッドへ集約するよう案内した。
+- `UserRepository.class.cast(userRepository)` は既に同じ型のため不要と説明した。
+- 検索ごとのOptional.get()を避け、最初の検索結果に対する不在時処理後にUserを利用するよう案内した。
+- IllegalArgumentExceptionは設計上の対象データなし（404 / RESOURCE_NOT_FOUND）にそのまま対応しないため、共通例外・ハンドラとの整合が必要と記録した。
+- 上記はレビュー時点の指摘であり、修正完了の再レビューは未実施。コンパイル・実行確認も本日は未実施。
+
+### Gitと終了状況
+
+- ユーザーの依頼に応じて差分確認、ステージング、WIPコミット、プッシュのコマンドを提示した。
+- ログ保存依頼時の確認ではHEADは `9451e8b WIP: implement user lookup service and update progress`、作業ツリーはクリーンだった。
+- リモートへの問い合わせは行っていないため、プッシュの成否は本記録では断定しない。
+- 本ログとcurrent_tasksの更新は上記コミット後に実施した。
+
+### 次回の再開位置
+
+- UserServiceのレビュー指摘が解消されているか確認する。
+- ID検索を1回にまとめ、取得したUserをtoUserResponseへ渡す処理を完成させる。
+- 不在時の例外方針を整理し、コンパイル確認を行う。
+- その後、メールアドレス検索とUserSummaryResponse変換に進む。
+
+
 ## 2026-10-20 作業再開状況の照合
 
 - チャット履歴、運用ルール、進捗記録、設計書、実装ファイルとGit履歴を照合した。

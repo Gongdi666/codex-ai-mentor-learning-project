@@ -1,5 +1,29 @@
 # Current Tasks
 
+## 2026-10-23 終了時点（最新・過去のタスクより優先）
+
+- UserServiceのID検索・メール検索・UserResponse変換・削除済み表示名を切り替えるUserSummaryResponse変換を実装し、コードレビュー済み。
+- ResourceNotFoundException、ErrorDetail、ErrorResponse、GlobalExceptionHandlerを作成済み。対象データなしを404 / RESOURCE_NOT_FOUNDへ変換する構成をレビュー済み。
+- ErrorResponse.timestampはOffsetDateTime。現在のnow()は実行環境の既定タイムゾーンを使用し、日本時間固定ではない。
+- ユーザーからコンパイル確認完了の報告あり。ただし、その後のメール検索・簡易DTO変換を含む最終状態のコンパイル成功は未確認。DB・HTTP・自動テストは未検証。
+- API設計書7.4とController設計書7.4〜7.6にUser関連仕様を反映済み。本人情報APIはGET /api/auth/me、AuthController→AuthServiceを維持。最新情報参照にUserServiceを利用できる。
+- Service設計書のUserService追補を通常の第10章へ統合し、一覧・共通方針・AuthServiceの連携説明と章番号を更新済み。
+- /api/users等の独立したユーザー管理APIは未定義。追加する要件・認可・画面の詳細は未確定。
+- 次回は最終状態のコンパイルを確認し、AuthService・CurrentUserResponse・認証基盤の既存設計を読み合わせ、本人情報取得に必要な実装順序を整理する。専用UserControllerや単体テストへの移行を自動的に前提としない。
+- 機能単位で実装を進め、その後に単体・結合テストを追加する方針。途中でテストを提案する場合は理由を説明する。
+- UserSummaryResponse変換は現在privateで未使用。他機能との接続時に配置・共有方法を整理する。
+- 未コミット変更はUserService、API・Controller・Service設計書、進捗ログ。common・exception配下に新規ファイルあり。Git操作はユーザー指示時のみ扱う。
+
+
+## 2026-10-21 終了時点（最新）
+
+- UserServiceはID検索とDTO変換を途中まで実装済み。10月20日時点の空クラスという記録から進捗あり。
+- レビューでは検索の7回呼び出し、不要なcast、Optional.get()の繰り返し、toUserResponse未使用、不在時の例外整合を指摘。修正後の再レビューは未実施。
+- 次回は検索を1回にまとめ、User全体を保持してtoUserResponseへ渡す処理を確認する。不在時の例外方針を整理してコンパイル確認後、メール検索・簡易DTO変換へ進む。
+- ログ更新前のHEADは `9451e8b`（WIPコミット）、作業ツリーはクリーン。リモートの最新状態とプッシュ成否は未確認。
+- 本日のチャット内容とレビュー詳細はAI_mentor_log.mdの2026-10-21節に記録済み。本日のコンパイル・実行確認は未実施。
+
+
 ## 2026-10-20 作業再開時の確認（最新）
 
 - 最新コミットは `7e84f45`（2026-08-22、User DTOとService設計追補）。ローカルmainとローカルのorigin/main参照は一致。リモートへの問い合わせは未実施。
