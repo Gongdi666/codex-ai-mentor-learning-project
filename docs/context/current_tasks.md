@@ -1,5 +1,43 @@
 # Current Tasks
 
+## 2026-10-27 終了時点（最新）
+
+- UserServiceTest.javaを作成中。UT-USER-001の準備段階で、Mockito.mockによるUserRepositoryの生成まで記述済み。
+- 未修正：whenのstatic import、Userコンストラクタの引数不一致、実際のServiceと異なるfindByIdのスタブ設定、SystemRoleの準備不足。テスト対象の実行・アサーション・検索1回の検証は未記述。
+- 次回はSystemRoleを用意し、Userの実際のコンストラクタに合わせて作成する。ID・固定日時をReflectionTestUtils等で設定し、findByIdAndDeletedAtIsNullの戻り値を設定する。
+- ADMINは定義済みロールではないためUSER等へ合わせる。不要import・ワイルドカードimportを整理する。
+- モック生成は@Mockとの併用を避け、まず明示的なmockで学習する。Repositoryを代用し、UserService自体は実物を動かす。
+- UT-USER-001は作成中・未実施。他の5ケースは未作成。コンパイル・JUnit実行・依存関係取得の完了報告は未確認。
+- ヒント・検索観点を中心に支援し、直接的な実装コードは明示依頼があるまで提示しない。
+- 終了時点のHEADはa2791c7。テスト方針・実装計画・仕様書・ログと作成途中のテストが未コミット。Git操作手順を案内する。
+
+
+## 単体テスト仕様の管理先（2026-10-25）
+
+- 個別ケースの正本は `docs/architecture/タスク管理機能/詳細設計/単体テスト仕様書.md` とする。MDで管理しExcel版との二重管理はしない。
+- テストケース設計書4.1から既存6ケースを移管済み。現時点はテストコード未作成・未実施。UserServiceのUT-USER-001から着手する。
+
+
+## 2026-10-25 テスト方針変更後のタスク（最新）
+
+- ユーザー合意により、処理の実装・レビュー直後に単体テストを追加し、機能接続後に結合テストを行う。10月23日の機能完成後にまとめて追加する方針を更新する。
+- 次はUserServiceTestの4ケース（ID・メールの取得成功と不在例外）を作成・実行する。続いてMasterDataServiceTestのDTO変換・空リストを確認する。
+- 使用技術は既存のJUnit Jupiter・Mockito。テストコードもユーザーが実装し、AIは考え方の解説・レビューを担当する。
+- テスト作成前に現状のcompileを確認する。実行時はMavenのtestを使用し、compile成功だけを動作確認としない。
+- 共通ハンドラのHTTP応答検証、Repositoryと実DBの検索検証は別の範囲として計画する。新規の業務APIをテスト目的だけで追加しない。
+- CurrentUserResponse・AuthService等の新規実装は、既存Serviceの単体テスト追加後に再開する。
+
+
+## 2026-10-25 再開確認（最新）
+
+- HEADはa2791c7（Implement user lookup service and common error handling）。確認開始時の作業ツリーはクリーン。ローカルmainと保存済みorigin/main参照は一致。リモート問い合わせは未実施。
+- UserService・共通例外・エラーDTO・ハンドラ・関連設計書の前回変更はコミット済み。
+- AuthService、AuthController、CurrentUserResponse、ログイン基盤は未実装。SecurityConfigは固定マスタAPIをpermitAllにする暫定設定のまま。
+- 最初の作業は最終状態のコンパイル確認。その後CurrentUserResponseの作成、認証済み本人IDの受け渡し・認証不在時の契約確認、AuthServiceと認証基盤の実装へ進む。
+- AuthControllerを作成するだけでは本人情報取得は動作完了しない。任意IDでの公開検索や認証省略のAPI追加は行わず、API設計書7.4とController設計書7.4〜7.6に従う。
+- 本日はビルド・コンテナ・DB・HTTP確認は未実施。
+
+
 ## 2026-10-23 終了時点（最新・過去のタスクより優先）
 
 - UserServiceのID検索・メール検索・UserResponse変換・削除済み表示名を切り替えるUserSummaryResponse変換を実装し、コードレビュー済み。
