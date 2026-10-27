@@ -107,6 +107,12 @@ Markdown以外のファイル
 
 ```text
 .
+├─ .agents/
+│  └─ skills/
+│     ├─ mentor-session/SKILL.md
+│     ├─ mentor-learning/SKILL.md
+│     ├─ mentor-requirements/SKILL.md
+│     └─ mentor-client/SKILL.md
 ├─ backend/
 │  ├─ pom.xml
 │  └─ src/
@@ -148,6 +154,19 @@ CodexをAIメンターとして動作させるためのメインプロンプト�
 
 作業開始時は、このファイルを読み込ませてプロジェクト状況を復元します。
 
+共通ルールと、作業別のSkillsを読む条件を記載しています。従来の「PROMPT.mdを読み込んで」という開始方法も使えます。
+
+### `.agents/skills/`
+
+PROMPT.mdの詳細手順を、作業別の4つのスキルに分けています。
+
+- [mentor-session](.agents/skills/mentor-session/SKILL.md): セッション開始・再開、ログとコンテキストの管理、終了報告
+- [mentor-learning](.agents/skills/mentor-learning/SKILL.md): 設計書の相談、レビュー、実装のつまずき、調査支援
+- [mentor-requirements](.agents/skills/mentor-requirements/SKILL.md): 使用環境・技術、要件定義、MVP、認証・権限
+- [mentor-client](.agents/skills/mentor-client/SKILL.md): クライアントモード、PMとしてのヒアリング、議事録と終了処理
+
+分割した本文は元の節番号を維持し、PROMPT.mdの各節に移動先を残しています。共通ルールと編集許可は、どのスキルにも適用されます。
+
 ### `docs/context/`
 
 現在の状況、決定事項、未決事項、学習メモ、用語集を管理します。
@@ -165,6 +184,36 @@ AIが直接編集できる領域です。
 要件定義書、基本設計書、詳細設計書などの設計成果物を管理します。
 
 この配下の設計書は、ユーザーが作成・修正します。
+
+## Skillsを使うときの運用
+
+CodexではAGENTS.mdを入口にPROMPT.mdを読み、そこに書かれた条件で必要なスキルを読み込みます。操作する言葉と保存先は従来どおりです。
+
+- `【クライアント】`: PMモードを開始します。以後は接頭辞がなくても、終了するまで同じモードで続きます。
+- `クライアント終了`: `docs/logs/Agenda_log.md` に議事録を保存し、通常メンターに戻ります。
+- `終了報告`: 学習内容・次回タスクを整理し、`docs/logs/AI_mentor_log.md` を更新します。クライアントモードの終了操作とは別です。
+
+### 低コストモデルやSkills機能がない環境
+
+必要なスキルの選択をモデル任せにしないよう、PROMPT.mdに入力条件・参照パス・確認事項を明記しています。スキル名と説明だけで済ませず、該当する `SKILL.md` の本文を読む運用です。複数の作業にまたがる場合は併用します。
+
+Skillsが一覧に表示されなくても、各ファイルを通常のMarkdownとして読めれば同じ手順を参照できます。必要なら「PROMPT.mdと `.agents/skills/mentor-client/SKILL.md` を読んでください」のように、ファイルを指定できます。ファイルを読む機能がない環境では、AGENTS.md・PROMPT.md・該当するSKILL.mdの内容を会話に貼り付けてください。PROMPT.mdだけのコピーでは、分割した詳細手順は含まれません。
+
+従来の全手順をまとめて参照させたい場合は、AGENTS.md・PROMPT.mdと4つのSKILL.mdすべてを読ませることもできます。その場合も、読んだだけでPMモードの開始やログ更新を行う指示にはなりません。
+
+モデルに応じてコード例の制限や編集許可を緩めることはありません。ただし、分割だけでモデル間の応答品質や指示への追従が同一になるとは限りません。利用するモデルで、次の動作を確認してください。
+
+### 動作確認
+
+ログを変更してよい作業用コピーで、新しいセッションから順に確認します。
+
+1. 従来の開始指示で、AGENTS.md・PROMPT.md・mentor-sessionを読み、既存のコンテキスト・ログ・設計書を確認すること。
+2. 「設計書をレビューして」でmentor-learningを読み、レビューだけを行い、依頼のない編集や完成例の提示をしないこと。要件・認証のレビューではmentor-requirementsも読むこと。
+3. `【クライアント】タスク管理の要件を整理したい` に続けて、接頭辞なしで要望を返してもPMモードを維持すること。mentor-clientとmentor-requirementsを使い、未決事項を推測で確定しないこと。
+4. `クライアント終了` でAgenda_log.mdに議事録を保存し、通常メンターに戻ること。その後の `終了報告` ではAI_mentor_log.mdに記録し、議事録の保存先を取り違えないこと。
+5. Skillsが自動選択されない場合も、PROMPT.mdのパス指定から本文を読めること。参照先が読めなければ、その旨を伝え、手順を推測しないこと。
+
+仕様の参考: [AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md)、[Skillsの作成と呼び出し](https://learn.chatgpt.com/docs/build-skills)、[プロジェクト内のSkills配置](https://learn.chatgpt.com/docs/customization/overview)。
 
 ## 現在の進捗
 
