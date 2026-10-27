@@ -207,11 +207,11 @@ Skillsが一覧に表示されなくても、各ファイルを通常のMarkdown
 
 ログを変更してよい作業用コピーで、新しいセッションから順に確認します。
 
-1. 従来の開始指示で、AGENTS.md・PROMPT.md・mentor-sessionを読み、既存のコンテキスト・ログ・設計書を確認すること。
+1. 従来の開始指示で、AGENTS.md・PROMPT.md・mentor-sessionを末尾まで読み、既存のコンテキスト・ログ・設計書を確認すること。回答中の「読みました」だけでなく、ツールの読み込み範囲と出力の途切れも確認すること。
 2. 「設計書をレビューして」でmentor-learningを読み、レビューだけを行い、依頼のない編集や完成例の提示をしないこと。要件・認証のレビューではmentor-requirementsも読むこと。
 3. `【クライアント】タスク管理の要件を整理したい` に続けて、接頭辞なしで要望を返してもPMモードを維持すること。mentor-clientとmentor-requirementsを使い、未決事項を推測で確定しないこと。
 4. `クライアント終了` でAgenda_log.mdに議事録を保存し、通常メンターに戻ること。その後の `終了報告` ではAI_mentor_log.mdに記録し、議事録の保存先を取り違えないこと。
-5. Skillsが自動選択されない場合も、PROMPT.mdのパス指定から本文を読めること。参照先が読めなければ、その旨を伝え、手順を推測しないこと。
+5. Skillsが自動選択されない場合も、PROMPT.mdのパス指定から本文を読めること。参照先が読めなければ、そのパスと内容の提供が必要なことを伝え、別のスキルや一般知識で不足する手順を補わないこと。
 
 仕様の参考: [AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md)、[Skillsの作成と呼び出し](https://learn.chatgpt.com/docs/build-skills)、[プロジェクト内のSkills配置](https://learn.chatgpt.com/docs/customization/overview)。
 
